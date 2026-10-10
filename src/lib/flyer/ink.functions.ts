@@ -103,7 +103,7 @@ export const askInk = createServerFn({ method: "POST" })
   .validator((input: unknown) => inkInput.parse(input))
   .handler(async ({ data }): Promise<InkResult> => {
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) return { ok: false, error: "Ink is not available in this preview." };
+    if (!apiKey) return { ok: false, error: "Ink is offline until an API key is set on this deploy." };
     if (!allowCall()) return { ok: false, error: "Ink needs a minute. Try again shortly." };
 
     const image = data.referenceImage;
