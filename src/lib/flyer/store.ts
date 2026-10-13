@@ -4,11 +4,15 @@ import { inkOn, mixHex } from "@/lib/flyer/color";
 import {
   centeredLayout,
   getFontPair,
+  getLayout,
   getStarter,
   getTheme,
+  layouts,
   starters,
+  themes,
 } from "@/lib/flyer/catalog";
 import { mergePatch, type FlyerPatch } from "@/lib/flyer/patch";
+import { generateStyles, type GeneratedStyle } from "@/lib/flyer/style";
 import { isTexture, type Align, type FlyerCopy, type FlyerDoc, type Texture } from "@/lib/flyer/types";
 
 const WELCOME_ID = "sheet-welcome";
@@ -21,6 +25,7 @@ type FlyerState = {
   activeId: string;
   past: Snapshot[];
   future: Snapshot[];
+  styleSeed: number;
   checkpoint: () => void;
   patchActive: (recipe: (doc: FlyerDoc) => FlyerDoc) => void;
   undo: () => void;
@@ -28,6 +33,9 @@ type FlyerState = {
   select: (id: string) => void;
   applyStarter: (starterId: string) => void;
   applyTheme: (themeId: string) => void;
+  applyStyle: (style: GeneratedStyle) => void;
+  nextStyles: () => void;
+  cookLook: () => void;
   applyLayout: (layoutId: string) => void;
   applyFormat: (formatId: string) => void;
   applyFont: (fontPairId: string) => void;
@@ -96,15 +104,24 @@ function blankDoc(): FlyerDoc {
 
 function normalize(doc: FlyerDoc): FlyerDoc {
   const base = welcomeDoc();
-  const theme = getTheme(typeof doc.themeId === "string" ? doc.themeId : base.themeId);
-  const colors = { ...theme.colors, ...(doc.colors ?? {}) };
+  const known = themes.find((item) => item.id === doc.themeId);
+  const theme = known ?? getTheme(base.themeId);
+  const colors = {
+    ...(known ? theme.colors : {}),
+    ...(doc.colors ?? {}),
+  };
+  if (!colors.bg || !colors.ink || !colors.accent || !colors.paper) {
+    Object.assign(colors, theme.colors, doc.colors ?? {});
+  }
   if (!colors.onAccent) colors.onAccent = inkOn(colors.accent);
+  if (!colors.mute) colors.mute = mixHex(colors.ink, colors.bg, 0.42);
+  const layoutId = layouts.some((item) => item.id === doc.layoutId) ? doc.layoutId : theme.layoutId;
   return {
     ...base,
     ...doc,
-    themeId: theme.id,
+    themeId: known ? known.id : "custom",
     formatId: typeof doc.formatId === "string" ? doc.formatId : base.formatId,
-    layoutId: typeof doc.layoutId === "string" ? doc.layoutId : theme.layoutId,
+    layoutId: getLayout(layoutId).id,
     fontPairId: getFontPair(typeof doc.fontPairId === "string" ? doc.fontPairId : theme.fontPairId).id,
     colors,
     copy: { ...base.copy, ...(doc.copy ?? {}) },
@@ -133,6 +150,7 @@ export const useFlyerStore = create<FlyerState>()(
       activeId: WELCOME_ID,
       past: [],
       future: [],
+      styleSeed: 1,
       checkpoint: () => {
         const { flyers, activeId, past } = get();
         set({
@@ -206,6 +224,26 @@ export const useFlyerStore = create<FlyerState>()(
           align: centeredLayout(theme.layoutId) ? "center" : "left",
         }));
       },
+      applyStyle: (style) => {
+        get().checkpoint();
+        get().patchActive((doc) => ({
+          ...doc,
+          themeId: "custom",
+          colors: { ...style.colors },
+          layoutId: style.layoutId,
+          fontPairId: style.fontPairId,
+          texture: style.texture,
+          uppercase: style.uppercase,
+          align: style.align,
+          headlineScale: style.headlineScale,
+        }));
+      },
+      nextStyles: () => set({ styleSeed: get().styleSeed + 1 }),
+      cookLook: () => {
+        const styleSeed = get().styleSeed + 1;
+        set({ styleSeed });
+        get().applyStyle(generateStyles(styleSeed)[0]);
+      },
       applyLayout: (layoutId) => {
         get().checkpoint();
         get().patchActive((doc) => ({
@@ -244,8 +282,20 @@ export const useFlyerStore = create<FlyerState>()(
         });
       },
       resetColors: () => {
-        const theme = getTheme(selectActive(get()).themeId);
+        const current = selectActive(get());
+        const theme = themes.find((item) => item.id === current.themeId);
         get().checkpoint();
+        if (!theme) {
+          get().patchActive((doc) => ({
+            ...doc,
+            colors: {
+              ...doc.colors,
+              onAccent: inkOn(doc.colors.accent),
+              mute: mixHex(doc.colors.ink, doc.colors.bg, 0.42),
+            },
+          }));
+          return;
+        }
         get().patchActive((doc) => ({ ...doc, colors: { ...theme.colors } }));
       },
       setTexture: (texture) => {

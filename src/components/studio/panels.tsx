@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlignCenter,
   AlignLeft,
@@ -8,15 +8,15 @@ import {
   LoaderCircle,
   Paperclip,
   Plus,
-  Shuffle,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import { fontPairs, formats, getFontPair, getFormat, getTheme, layouts, starters, themeGroups, themes } from "@/lib/flyer/catalog";
+import { fontPairs, formats, getFontPair, getFormat, getLayout, getTheme, layouts, starters, themeGroups, themes } from "@/lib/flyer/catalog";
 import { fileToJpeg, readTextFile } from "@/lib/flyer/photos";
 import type { ChatMessage } from "@/lib/flyer/patch";
+import { forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
 import { selectActive, useFlyerStore } from "@/lib/flyer/store";
 import { COPY_LIMITS, TEXTURES, type FlyerCopy, type Texture } from "@/lib/flyer/types";
 
@@ -136,6 +136,10 @@ const TEXTURE_LABELS: Record<Texture, string> = {
 export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (value: boolean) => void }) {
   const doc = useFlyerStore(selectActive);
   const applyTheme = useFlyerStore((state) => state.applyTheme);
+  const applyStyle = useFlyerStore((state) => state.applyStyle);
+  const nextStyles = useFlyerStore((state) => state.nextStyles);
+  const cookLook = useFlyerStore((state) => state.cookLook);
+  const seed = useFlyerStore((state) => state.styleSeed);
   const applyLayout = useFlyerStore((state) => state.applyLayout);
   const applyFormat = useFlyerStore((state) => state.applyFormat);
   const applyFont = useFlyerStore((state) => state.applyFont);
@@ -146,27 +150,122 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
   const setColor = useFlyerStore((state) => state.setColor);
   const resetColors = useFlyerStore((state) => state.resetColors);
   const edit = useEditSession();
+  const styles = generateStyles(seed);
+  const [kept, setKept] = useState<GeneratedStyle[]>([]);
+
+  useEffect(() => {
+    setKept(loadKept());
+  }, []);
+
+  function keepCurrent() {
+    const match = styles.find(
+      (style) =>
+        doc.layoutId === style.layoutId &&
+        doc.fontPairId === style.fontPairId &&
+        doc.colors.bg === style.colors.bg &&
+        doc.colors.accent === style.colors.accent,
+    );
+    const style = match ? { ...match, key: `kept-${Date.now()}` } : lookFromDoc(doc);
+    setKept(rememberLook(style));
+    toast.success("Look kept");
+  }
 
   return (
     <div className="flex flex-col gap-5 p-3">
-      <Intro title="Look" body="A theme sets color, type, and layout. Change any of them after." />
+      <Intro title="Look" body="Generate a style, or start from a theme. The words stay put." />
 
       <section>
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-paper">Themes</h3>
-          <Button
-            size="sm"
-            variant="line"
-            onClick={() => {
-              const pool = themes.filter((theme) => theme.id !== doc.themeId);
-              const pick = pool[Math.floor(Math.random() * pool.length)] ?? themes[0];
-              applyTheme(pick.id);
-            }}
-          >
-            <Shuffle className="size-4" />
-            Shuffle
-          </Button>
+          <h3 className="text-sm font-medium text-paper">Styles</h3>
+          <div className="flex gap-2">
+            <Button size="sm" variant="line" onClick={keepCurrent}>
+              Keep
+            </Button>
+            <Button size="sm" variant="line" onClick={() => nextStyles()}>
+              Again
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => cookLook()}>
+              New look
+            </Button>
+          </div>
         </div>
+        <div className="flex flex-col gap-2">
+          {styles.map((style) => {
+            const on =
+              doc.themeId === "custom" &&
+              doc.layoutId === style.layoutId &&
+              doc.fontPairId === style.fontPairId &&
+              doc.texture === style.texture &&
+              doc.colors.bg === style.colors.bg &&
+              doc.colors.accent === style.colors.accent;
+            const font = getFontPair(style.fontPairId);
+            const layout = getLayout(style.layoutId);
+            const headline = doc.copy.headline.split("\n")[0]?.trim() || style.name;
+            return (
+              <button
+                key={style.key}
+                type="button"
+                onClick={() => applyStyle(style)}
+                aria-pressed={on}
+                className={cn(
+                  "rounded-lg border p-2 text-left",
+                  on ? "border-press bg-panel-2" : "border-line bg-panel hover:border-mute",
+                )}
+              >
+                <span className="flex h-14 overflow-hidden rounded-sm" style={{ background: style.colors.bg }}>
+                  <span className="flex min-w-0 flex-1 items-end p-2" style={{ color: style.colors.ink }}>
+                    <span
+                      className="truncate text-xl leading-none"
+                      style={{
+                        fontFamily: `"${font.display}", ${font.displayFallback}`,
+                        textTransform: style.uppercase ? "uppercase" : "none",
+                      }}
+                    >
+                      {headline}
+                    </span>
+                  </span>
+                  <span className="w-3 shrink-0" style={{ background: style.colors.accent }} />
+                </span>
+                <span className="mt-2 block text-sm text-paper">{style.name}</span>
+                <span className="block text-xs text-mute">{style.vibe}</span>
+                <span className="mt-1 block text-xs text-mute">
+                  {layout.name} · {font.name} · {style.texture}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {kept.length ? (
+          <div className="mt-3">
+            <p className="mb-1.5 text-xs tracking-widest text-mute uppercase">Kept</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {kept.map((style) => (
+                <div key={style.key} className="flex shrink-0 items-center gap-1 rounded-lg border border-line bg-panel p-1">
+                  <button type="button" className="flex items-center gap-2 px-1 py-1 text-left" onClick={() => applyStyle(style)}>
+                    <span className="flex h-8 w-10 overflow-hidden rounded-sm">
+                      <span className="h-full w-1/2" style={{ background: style.colors.bg }} />
+                      <span className="h-full w-1/4" style={{ background: style.colors.ink }} />
+                      <span className="h-full w-1/4" style={{ background: style.colors.accent }} />
+                    </span>
+                    <span className="text-sm text-paper">{style.name}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="px-1 text-mute hover:text-paper"
+                    aria-label={`Forget ${style.name}`}
+                    onClick={() => setKept(forgetLook(style.key))}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      <section>
+        <h3 className="mb-2 text-sm font-medium text-paper">Themes</h3>
         {themeGroups.map((group) => (
           <div key={group.id} className="mb-3">
             <p className="mb-1.5 text-xs tracking-widest text-mute uppercase">{group.label}</p>
@@ -599,7 +698,7 @@ export function InkPanel({
   busy: boolean;
   error: string | null;
   reference: string | null;
-  onSend: (text: string, auto: boolean, image?: string | null, label?: string) => void;
+  onSend: (text: string, image?: string | null, label?: string) => void;
   onApply: (id: string) => void;
   onClear: () => void;
   onClearReference: () => void;
@@ -637,7 +736,7 @@ export function InkPanel({
       <div ref={threadRef} className="scroll-y flex min-h-0 flex-1 flex-col gap-3 p-3">
         <Intro
           title="Prompt"
-          body="Ask for a line, a whole draft, or a style. Style chips rewrite the sheet. Notes you send leave this browser."
+          body="Ask for a line, a mood, or a new format. Ink rewrites the sheet. Notes you send leave this browser."
         />
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-paper">Idea notes</span>
@@ -687,7 +786,7 @@ export function InkPanel({
         <div className="flex flex-col gap-2" aria-live="polite">
           {messages.length === 0 ? (
             <p className="rounded-lg border border-line bg-ink px-3 py-3 text-sm leading-relaxed text-mute">
-              Try a style chip, or type what the flyer is for. Ink answers here and can put the result on the sheet.
+              Try a style chip, or type what the flyer is for. Ink puts the edit on the sheet.
             </p>
           ) : (
             messages.map((message) => (
@@ -734,7 +833,7 @@ export function InkPanel({
               variant="quiet"
               disabled={busy}
               className="shrink-0"
-              onClick={() => onSend(item.text, true, reference, item.label)}
+              onClick={() => onSend(item.text, reference, item.label)}
             >
               {item.label}
             </Button>
@@ -755,7 +854,7 @@ export function InkPanel({
             event.preventDefault();
             const text = draft.current?.value ?? "";
             if (!text.trim() || busy) return;
-            onSend(text, false);
+            onSend(text);
             if (draft.current) draft.current.value = "";
           }}
         >

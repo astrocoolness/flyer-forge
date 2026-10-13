@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FlyerSheet } from "@/components/studio/sheet";
 import { CopyPanel, InkPanel, Library as SheetLibrary, LookPanel, PhotoPanel } from "@/components/studio/panels";
 import { cn } from "@/lib/cn";
-import { getFormat, getTheme } from "@/lib/flyer/catalog";
+import { getFormat, getTheme, themes } from "@/lib/flyer/catalog";
 import { askInk } from "@/lib/flyer/ink.functions";
 import { sheetPayload, splitInkReply, type ChatMessage } from "@/lib/flyer/patch";
 import { fileToJpeg, loadPhoto, savePhoto, shrinkDataUrl } from "@/lib/flyer/photos";
@@ -90,7 +90,8 @@ export function Studio() {
   const nameArmed = useRef(false);
   const dragDepth = useRef(0);
   const format = getFormat(doc.formatId);
-  const theme = getTheme(doc.themeId);
+  const theme = themes.find((item) => item.id === doc.themeId) ?? getTheme(doc.themeId);
+  const themeLabel = themes.some((item) => item.id === doc.themeId) ? theme.name : "Custom";
 
   useEffect(() => {
     void useFlyerStore.persist.rehydrate();
@@ -202,7 +203,7 @@ export function Studio() {
     }
   }
 
-  async function send(prompt: string, auto: boolean, image?: string | null, label?: string) {
+  async function send(prompt: string, image?: string | null, label?: string) {
     const full = prompt.trim();
     if (!full || busy) return;
     const attached = image === undefined ? reference : image;
@@ -246,9 +247,10 @@ export function Studio() {
         patch: parsed.patch,
         applied: false,
       };
-      if (auto && parsed.patch) {
+      if (parsed.patch) {
         useFlyerStore.getState().applyInk(parsed.patch);
         assistant.applied = true;
+        toast.success("On the sheet");
       }
       setThread((current) => [...current, assistant].slice(-24));
       if (attached) setReference(null);
@@ -306,7 +308,6 @@ export function Studio() {
       setReference(small);
       await send(
         "Look at the attached photo and rewrite the flyer so the words belong with the picture. Keep every fact already on the sheet.",
-        true,
         small,
         "Read the photo",
       );
@@ -406,9 +407,18 @@ export function Studio() {
               </div>
             </div>
           </div>
-          <button type="button" onClick={() => setTab("look")} className="no-print shrink-0 py-2 text-center text-xs tracking-widest text-mute uppercase">
-            {format.name} · {theme.name}
-          </button>
+          <div className="no-print flex shrink-0 items-center justify-center gap-4 py-2">
+            <button type="button" onClick={() => setTab("look")} className="text-xs tracking-widest text-mute uppercase">
+              {format.name} · {themeLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => useFlyerStore.getState().cookLook()}
+              className="text-xs tracking-widest text-paper uppercase"
+            >
+              New look
+            </button>
+          </div>
         </div>
         <section className="no-print flex min-h-0 flex-1 flex-col border-t border-line lg:w-96 lg:flex-none lg:border-t-0 lg:border-l">
           <div className="flex border-b border-line" role="tablist" aria-label="Flyer tools">
@@ -446,7 +456,7 @@ export function Studio() {
                 busy={busy}
                 error={inkError}
                 reference={reference}
-                onSend={(text, auto, image, label) => void send(text, auto, image, label)}
+                onSend={(text, image, label) => void send(text, image, label)}
                 onApply={applyMessage}
                 onClear={() => setThread([])}
                 onClearReference={() => setReference(null)}
