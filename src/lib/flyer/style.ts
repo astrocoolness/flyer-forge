@@ -60,6 +60,33 @@ const RECIPES: Recipe[] = [
   { name: "Bus", vibe: "Last route", hue: 232, accentHue: 48, ground: "dark", layoutId: "split", fontPairId: "billboard", texture: "grain", uppercase: true, align: "left", headlineScale: 1.02 },
   { name: "Moss", vibe: "Garden wall", hue: 110, accentHue: 28, ground: "light", layoutId: "editorial", fontPairId: "book", texture: "speckle", uppercase: false, align: "left", headlineScale: 0.98 },
   { name: "Ember", vibe: "Kitchen night", hue: 18, accentHue: 42, ground: "dark", layoutId: "frame", fontPairId: "deco", texture: "grain", uppercase: false, align: "center", headlineScale: 1.04 },
+  { name: "Cobalt", vibe: "Dock night", hue: 222, accentHue: 48, ground: "dark", layoutId: "slam", fontPairId: "block", texture: "halftone", uppercase: true, align: "left", headlineScale: 1.1 },
+  { name: "Honey", vibe: "Tea room", hue: 44, accentHue: 18, ground: "light", layoutId: "frame", fontPairId: "classic", texture: "clean", uppercase: false, align: "center", headlineScale: 1 },
+  { name: "Lilac", vibe: "Studio wall", hue: 278, accentHue: 330, ground: "light", layoutId: "poster", fontPairId: "editorial", texture: "speckle", uppercase: false, align: "center", headlineScale: 1.06 },
+  { name: "Olive", vibe: "Pantry", hue: 82, accentHue: 38, ground: "dark", layoutId: "editorial", fontPairId: "book", texture: "grain", uppercase: false, align: "left", headlineScale: 0.98 },
+  { name: "Punch", vibe: "Club door", hue: 328, accentHue: 48, ground: "dark", layoutId: "marquee", fontPairId: "comic", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.08 },
+  { name: "Slate", vibe: "Office board", hue: 214, accentHue: 200, ground: "light", layoutId: "columns", fontPairId: "modern", texture: "rules", uppercase: false, align: "left", headlineScale: 0.96 },
+  { name: "Berry", vibe: "Late bar", hue: 348, accentHue: 20, ground: "dark", layoutId: "badge", fontPairId: "stadium", texture: "xerox", uppercase: true, align: "center", headlineScale: 1.08 },
+  { name: "Fog", vibe: "Harbor morning", hue: 200, accentHue: 28, ground: "light", layoutId: "split", fontPairId: "newsroom", texture: "grain", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Lime", vibe: "Loading dock", hue: 96, accentHue: 48, ground: "dark", layoutId: "rail", fontPairId: "brutal", texture: "halftone", uppercase: true, align: "left", headlineScale: 1.04 },
+  { name: "Brick", vibe: "Sidewalk", hue: 14, accentHue: 42, ground: "light", layoutId: "stack", fontPairId: "condensed", texture: "xerox", uppercase: true, align: "left", headlineScale: 1.02 },
+  { name: "Icebox", vibe: "Cold case", hue: 196, accentHue: 210, ground: "flood", layoutId: "ticket", fontPairId: "modern", texture: "clean", uppercase: false, align: "left", headlineScale: 0.96 },
+  { name: "Velvet", vibe: "Private room", hue: 332, accentHue: 42, ground: "dark", layoutId: "frame", fontPairId: "deco", texture: "grain", uppercase: false, align: "center", headlineScale: 1.04 },
+  { name: "Apricot", vibe: "Bakery window", hue: 24, accentHue: 350, ground: "light", layoutId: "slam", fontPairId: "handbill", texture: "speckle", uppercase: false, align: "left", headlineScale: 1.06 },
+  { name: "Glacier", vibe: "Ski lodge", hue: 198, accentHue: 210, ground: "light", layoutId: "stage", fontPairId: "condensed", texture: "clean", uppercase: true, align: "center", headlineScale: 1.1 },
+  { name: "Denim", vibe: "Work shirt", hue: 218, accentHue: 28, ground: "flood", layoutId: "columns", fontPairId: "block", texture: "rules", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Butter", vibe: "Market stall", hue: 48, accentHue: 8, ground: "flood", layoutId: "poster", fontPairId: "impact", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.12 },
+  { name: "Copper", vibe: "Workshop", hue: 22, accentHue: 48, ground: "dark", layoutId: "ticket", fontPairId: "typewriter", texture: "grain", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Mint", vibe: "Soda shop", hue: 158, accentHue: 340, ground: "light", layoutId: "ribbon", fontPairId: "comic", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.04 },
+  { name: "Rouge", vibe: "Lipstick bill", hue: 355, accentHue: 42, ground: "flood", layoutId: "slam", fontPairId: "impact", texture: "clean", uppercase: true, align: "left", headlineScale: 1.12 },
+  { name: "Bone", vibe: "Museum card", hue: 40, accentHue: 18, ground: "light", layoutId: "frame", fontPairId: "book", texture: "clean", uppercase: false, align: "center", headlineScale: 0.98 },
+  { name: "Pitch", vibe: "Black box", hue: 260, accentHue: 48, ground: "dark", layoutId: "poster", fontPairId: "billboard", texture: "xerox", uppercase: true, align: "center", headlineScale: 1.1 },
+  { name: "Citrus", vibe: "Juice stand", hue: 52, accentHue: 120, ground: "flood", layoutId: "badge", fontPairId: "comic", texture: "halftone", uppercase: true, align: "center", headlineScale: 1.06 },
+  { name: "Smoke", vibe: "Afterparty", hue: 250, accentHue: 28, ground: "dark", layoutId: "stack", fontPairId: "editorial", texture: "grain", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Pearl", vibe: "Wedding line", hue: 330, accentHue: 350, ground: "light", layoutId: "frame", fontPairId: "deco", texture: "clean", uppercase: false, align: "center", headlineScale: 1 },
+  { name: "Pine", vibe: "Trailhead", hue: 140, accentHue: 42, ground: "light", layoutId: "rail", fontPairId: "condensed", texture: "grain", uppercase: true, align: "left", headlineScale: 1.02 },
+  { name: "Blush", vibe: "Dance card", hue: 350, accentHue: 18, ground: "light", layoutId: "ribbon", fontPairId: "classic", texture: "speckle", uppercase: false, align: "center", headlineScale: 1 },
+  { name: "Tangerine", vibe: "Noon sign", hue: 28, accentHue: 200, ground: "flood", layoutId: "marquee", fontPairId: "billboard", texture: "clean", uppercase: true, align: "center", headlineScale: 1.08 },
 ];
 
 function hslToHex(h: number, s: number, l: number): string {
@@ -155,11 +182,13 @@ function paint(recipe: Recipe, hueShift: number): FlyerColors {
   return finish(bg, ink, accentOn(bg, ink, accentHue, 72), paper);
 }
 
+export const STYLE_COUNT = RECIPES.length;
+
 export function generateStyles(seed: number): GeneratedStyle[] {
   const hueShift = ((seed * 17) % 41) - 20;
   const ranked = RECIPES.map((recipe, index) => ({ recipe, roll: mix(seed, index) }));
   ranked.sort((a, b) => a.roll - b.roll);
-  return ranked.slice(0, 6).map(({ recipe }) => ({
+  return ranked.slice(0, 8).map(({ recipe }) => ({
     key: `${recipe.name}-${seed}`,
     name: recipe.name,
     vibe: recipe.vibe,

@@ -16,7 +16,7 @@ import { cn } from "@/lib/cn";
 import { fontPairs, formats, getFontPair, getFormat, getLayout, getTheme, layouts, starters, themeGroups, themes } from "@/lib/flyer/catalog";
 import { fileToJpeg, readTextFile } from "@/lib/flyer/photos";
 import type { ChatMessage } from "@/lib/flyer/patch";
-import { forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
+import { STYLE_COUNT, forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
 import { selectActive, useFlyerStore } from "@/lib/flyer/store";
 import { COPY_LIMITS, TEXTURES, type FlyerCopy, type Texture } from "@/lib/flyer/types";
 
@@ -175,8 +175,11 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
       <Intro title="Look" body="Generate a style, or start from a theme. The words stay put." />
 
       <section>
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-paper">Styles</h3>
+        <div className="mb-2 flex items-end justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-medium text-paper">Styles</h3>
+            <p className="text-xs text-mute">{STYLE_COUNT} looks</p>
+          </div>
           <div className="flex gap-2">
             <Button size="sm" variant="line" onClick={keepCurrent}>
               Keep
