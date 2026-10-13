@@ -48,6 +48,18 @@ const RECIPES: Recipe[] = [
   { name: "Stub", vibe: "Tear-off", hue: 210, accentHue: 12, ground: "light", layoutId: "ticket", fontPairId: "modern", texture: "rules", uppercase: false, align: "left", headlineScale: 0.94 },
   { name: "Floor", vibe: "Room night", hue: 268, accentHue: 322, ground: "dark", layoutId: "badge", fontPairId: "stadium", texture: "halftone", uppercase: true, align: "center", headlineScale: 1.08 },
   { name: "Morning", vibe: "Early line", hue: 24, accentHue: 8, ground: "flood", layoutId: "columns", fontPairId: "classic", texture: "clean", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Pool", vibe: "Deep water", hue: 188, accentHue: 168, ground: "dark", layoutId: "stage", fontPairId: "modern", texture: "grain", uppercase: false, align: "center", headlineScale: 1.06 },
+  { name: "Chili", vibe: "Hot window", hue: 8, accentHue: 42, ground: "flood", layoutId: "slam", fontPairId: "impact", texture: "clean", uppercase: true, align: "left", headlineScale: 1.14 },
+  { name: "Plum", vibe: "After dark", hue: 312, accentHue: 28, ground: "dark", layoutId: "poster", fontPairId: "classic", texture: "grain", uppercase: false, align: "center", headlineScale: 1.08 },
+  { name: "Sand", vibe: "Late sun", hue: 36, accentHue: 16, ground: "light", layoutId: "stack", fontPairId: "editorial", texture: "grain", uppercase: false, align: "left", headlineScale: 1 },
+  { name: "Neon", vibe: "Warehouse", hue: 312, accentHue: 78, ground: "dark", layoutId: "marquee", fontPairId: "brutal", texture: "halftone", uppercase: true, align: "center", headlineScale: 1.1 },
+  { name: "Lawn", vibe: "Block party", hue: 92, accentHue: 48, ground: "flood", layoutId: "badge", fontPairId: "block", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.04 },
+  { name: "Cream", vibe: "Shop card", hue: 40, accentHue: 210, ground: "light", layoutId: "ticket", fontPairId: "typewriter", texture: "clean", uppercase: false, align: "left", headlineScale: 0.96 },
+  { name: "Rust", vibe: "Yard gate", hue: 16, accentHue: 48, ground: "dark", layoutId: "rail", fontPairId: "condensed", texture: "xerox", uppercase: true, align: "left", headlineScale: 1.06 },
+  { name: "Candy", vibe: "Fair stall", hue: 340, accentHue: 48, ground: "light", layoutId: "ribbon", fontPairId: "comic", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.08 },
+  { name: "Bus", vibe: "Last route", hue: 232, accentHue: 48, ground: "dark", layoutId: "split", fontPairId: "billboard", texture: "grain", uppercase: true, align: "left", headlineScale: 1.02 },
+  { name: "Moss", vibe: "Garden wall", hue: 110, accentHue: 28, ground: "light", layoutId: "editorial", fontPairId: "book", texture: "speckle", uppercase: false, align: "left", headlineScale: 0.98 },
+  { name: "Ember", vibe: "Kitchen night", hue: 18, accentHue: 42, ground: "dark", layoutId: "frame", fontPairId: "deco", texture: "grain", uppercase: false, align: "center", headlineScale: 1.04 },
 ];
 
 function hslToHex(h: number, s: number, l: number): string {
@@ -97,13 +109,18 @@ function readable(against: string, hue: number): string {
 }
 
 function accentOn(bg: string, ink: string, hue: number, sat: number): string {
-  const ranked = [30, 38, 46, 54, 62, 70, 78]
-    .map((light) => hslToHex(hue, sat, light))
-    .map((hex) => ({ hex, onBg: contrast(hex, bg), onInk: contrast(hex, ink) }))
+  const lights = [24, 32, 42, 52, 62, 72, 82];
+  const ranked = [hue, hue + 150, hue + 200].flatMap((accentHue) =>
+    lights.map((light) => {
+      const hex = hslToHex(accentHue, sat, light);
+      return { hex, onBg: contrast(hex, bg), onInk: contrast(hex, ink) };
+    }),
+  );
+  const clear = ranked
     .filter((item) => item.onBg >= 2.4 && item.onInk >= 1.35)
     .sort((a, b) => b.onBg - a.onBg);
-  if (ranked[0]) return ranked[0].hex;
-  return hslToHex(hue, sat, luminance(bg) < 0.2 ? 62 : 36);
+  if (clear[0]) return clear[0].hex;
+  return ranked.sort((a, b) => b.onBg - a.onBg)[0].hex;
 }
 
 function finish(bg: string, ink: string, accent: string, paper: string): FlyerColors {
@@ -139,23 +156,27 @@ function paint(recipe: Recipe, hueShift: number): FlyerColors {
 }
 
 export function generateStyles(seed: number): GeneratedStyle[] {
-  const start = ((seed % RECIPES.length) + RECIPES.length) % RECIPES.length;
   const hueShift = ((seed * 17) % 41) - 20;
-  return [0, 1, 2].map((step) => {
-    const recipe = RECIPES[(start + step * 4) % RECIPES.length];
-    return {
-      key: `${recipe.name}-${seed}`,
-      name: recipe.name,
-      vibe: recipe.vibe,
-      colors: paint(recipe, hueShift),
-      layoutId: recipe.layoutId,
-      fontPairId: recipe.fontPairId,
-      texture: recipe.texture,
-      uppercase: recipe.uppercase,
-      align: recipe.align,
-      headlineScale: recipe.headlineScale,
-    };
-  });
+  const ranked = RECIPES.map((recipe, index) => ({ recipe, roll: mix(seed, index) }));
+  ranked.sort((a, b) => a.roll - b.roll);
+  return ranked.slice(0, 6).map(({ recipe }) => ({
+    key: `${recipe.name}-${seed}`,
+    name: recipe.name,
+    vibe: recipe.vibe,
+    colors: paint(recipe, hueShift),
+    layoutId: recipe.layoutId,
+    fontPairId: recipe.fontPairId,
+    texture: recipe.texture,
+    uppercase: recipe.uppercase,
+    align: recipe.align,
+    headlineScale: recipe.headlineScale,
+  }));
+}
+
+function mix(seed: number, index: number): number {
+  let h = (seed + 1) * 374761393 + index * 668265263;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return (h ^ (h >>> 16)) >>> 0;
 }
 
 const KEPT_KEY = "flyer-forge-looks";
