@@ -1021,6 +1021,320 @@ function Ribbon({ doc, fonts, photoUrl, frame }: RenderProps) {
   );
 }
 
+function dateMark(date: string): { big: string; rest: string } {
+  const match = date.match(/\d{1,4}/);
+  if (!match || match.index === undefined) return { big: "", rest: date.trim() };
+  const rest = `${date.slice(0, match.index)} ${date.slice(match.index + match[0].length)}`
+    .replace(/\s+/g, " ")
+    .replace(/^[\s,·|/–-]+|[\s,·|/–-]+$/g, "")
+    .trim();
+  return { big: match[0], rest };
+}
+
+function Crop({ doc, fonts, photoUrl, frame }: RenderProps) {
+  const bleed = doc.photoRole === "background" && photoUrl;
+  const inset = doc.photoRole === "inset" && photoUrl;
+  const width = frame.w * 1.35;
+  const mark = dateMark(doc.copy.date);
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      {bleed ? <Bleed url={photoUrl} pos={doc.photoPos} dim={doc.photoDim} scrim={doc.colors.bg} gradient /> : null}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "62%",
+          height: Math.max(8, frame.h * 0.016),
+          background: doc.colors.accent,
+        }}
+      />
+      <div style={{ position: "absolute", top: frame.pad, right: frame.pad, width: "38%", textAlign: "right" }}>
+        <Kicker doc={doc} fonts={fonts} width={frame.w * 0.4} />
+        {mark.big ? (
+          <p
+            style={{
+              margin: 0,
+              fontFamily: displayFace(fonts),
+              fontSize: Math.round(frame.w * (frame.tiny ? 0.16 : 0.22)),
+              lineHeight: 0.82,
+              letterSpacing: "-0.04em",
+              color: doc.colors.accent,
+            }}
+          >
+            {mark.big}
+          </p>
+        ) : null}
+        <p
+          style={{
+            margin: "0.2em 0 0",
+            fontFamily: bodyFace(fonts),
+            fontWeight: 700,
+            fontSize: Math.max(11, frame.w * 0.028),
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          {[mark.rest, doc.copy.place].filter((item) => item.trim()).join(" · ")}
+        </p>
+      </div>
+      <div style={{ position: "absolute", left: frame.pad * 0.35, right: -frame.w * 0.22, bottom: frame.h * (frame.tiny ? 0.18 : 0.2) }}>
+        {inset ? (
+          <InsetPhoto
+            url={photoUrl}
+            pos={doc.photoPos}
+            style={{ width: "46%", height: frame.h * 0.18, marginBottom: frame.pad * 0.4 }}
+          />
+        ) : null}
+        <Headline doc={doc} fonts={fonts} width={width} frame={frame} />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: frame.pad,
+          right: frame.pad,
+          bottom: frame.pad * 0.55,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: 12,
+        }}
+      >
+        <p style={{ margin: 0, maxWidth: "68%", fontFamily: bodyFace(fonts), fontSize: Math.max(12, frame.w * 0.032), lineHeight: 1.25 }}>
+          {doc.copy.subhead || doc.copy.cta}
+        </p>
+        {doc.copy.price.trim() ? (
+          <span
+            style={{
+              background: doc.colors.accent,
+              color: doc.colors.onAccent,
+              fontFamily: bodyFace(fonts),
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontSize: Math.max(11, frame.w * 0.026),
+              padding: "0.35em 0.55em",
+            }}
+          >
+            {doc.copy.price}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function Riso({ doc, fonts, photoUrl, frame }: RenderProps) {
+  const width = frame.w - frame.pad * 2;
+  const photo = doc.photoRole !== "off" ? photoUrl : null;
+  const shift = Math.max(5, Math.round(frame.w * 0.014));
+  const text = doc.copy.headline.trim() || "Headline";
+  const size = headlineSize(text, width * 1.05, frame, fonts, doc.headlineScale * 1.12);
+  const mark = dateMark(doc.copy.date);
+  const face: CSSProperties = {
+    margin: 0,
+    fontFamily: displayFace(fonts),
+    fontSize: size,
+    lineHeight: 0.86,
+    letterSpacing: "-0.03em",
+    fontWeight: 700,
+    textTransform: doc.uppercase ? "uppercase" : "none",
+    whiteSpace: "pre-line",
+    overflowWrap: "anywhere",
+  };
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          left: frame.w * 0.08,
+          top: frame.h * 0.07,
+          width: frame.w * 0.78,
+          height: frame.h * 0.42,
+          background: doc.colors.accent,
+        }}
+      />
+      {photo ? (
+        <img
+          alt=""
+          src={photo}
+          decoding="async"
+          style={{
+            position: "absolute",
+            left: frame.w * 0.1,
+            top: frame.h * 0.09,
+            width: frame.w * 0.74,
+            height: frame.h * 0.38,
+            objectFit: "cover",
+            objectPosition: photoPosition(doc.photoPos),
+            filter: "grayscale(1) contrast(1.2)",
+            mixBlendMode: "multiply",
+          }}
+        />
+      ) : null}
+      <div style={{ position: "absolute", left: frame.pad * 0.7, right: frame.pad * 0.4, top: frame.h * (photo ? 0.46 : 0.28) }}>
+        <div style={{ position: "relative" }}>
+          <h1 style={{ ...face, position: "absolute", left: shift, top: shift * 0.65, width: "100%", color: doc.colors.accent }}>{text}</h1>
+          <h1 style={{ ...face, position: "relative", color: doc.colors.ink, opacity: doc.copy.headline.trim() ? 1 : 0.38 }}>{text}</h1>
+        </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: frame.pad,
+          right: frame.pad,
+          bottom: frame.pad * 0.7,
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 16,
+        }}
+      >
+        <div>
+          <Kicker doc={doc} fonts={fonts} width={width * 0.6} />
+          <p style={{ margin: "0.3em 0 0", maxWidth: frame.w * 0.55, fontFamily: bodyFace(fonts), fontSize: Math.max(12, width * 0.032), lineHeight: 1.3 }}>
+            {[doc.copy.subhead, doc.copy.place, doc.copy.cta].filter((item) => item.trim()).slice(0, 2).join(" · ")}
+          </p>
+        </div>
+        {mark.big ? (
+          <p
+            style={{
+              margin: 0,
+              fontFamily: displayFace(fonts),
+              fontSize: Math.round(frame.w * (frame.tiny ? 0.14 : 0.2)),
+              lineHeight: 0.8,
+              color: doc.colors.ink,
+            }}
+          >
+            {mark.big}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function Club({ doc, fonts, photoUrl, frame }: RenderProps) {
+  const bleed = doc.photoRole === "background" && photoUrl;
+  const inset = doc.photoRole === "inset" && photoUrl;
+  const width = frame.w - frame.pad * 2;
+  const nameSize = headlineSize(doc.copy.headline.trim() || "Headline", width * 1.45, frame, fonts, doc.headlineScale);
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      {bleed ? (
+        <>
+          <img
+            alt=""
+            src={photoUrl}
+            decoding="async"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: photoPosition(doc.photoPos),
+              filter: "grayscale(1) contrast(1.15)",
+            }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: doc.colors.accent, mixBlendMode: "multiply", opacity: 0.72 }} />
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 8%, ${doc.colors.bg}e6 78%)` }} />
+        </>
+      ) : (
+        <div
+          style={{
+            position: "absolute",
+            width: frame.w * 0.92,
+            height: frame.w * 0.92,
+            borderRadius: "50%",
+            background: doc.colors.accent,
+            right: -frame.w * 0.34,
+            top: -frame.w * 0.22,
+          }}
+        />
+      )}
+      {inset ? (
+        <InsetPhoto
+          url={photoUrl}
+          pos={doc.photoPos}
+          style={{
+            position: "absolute",
+            top: frame.pad,
+            right: frame.pad,
+            width: frame.wide ? "34%" : "46%",
+            height: frame.h * 0.28,
+          }}
+        />
+      ) : null}
+      <div style={{ position: "absolute", top: frame.pad, left: frame.pad, right: frame.pad }}>
+        <Kicker doc={doc} fonts={fonts} width={width} color={bleed ? doc.colors.paper : doc.colors.ink} />
+      </div>
+      <div style={{ position: "absolute", left: frame.pad, right: frame.pad, bottom: frame.pad * 0.7 }}>
+        <h1
+          style={{
+            margin: 0,
+            fontFamily: displayFace(fonts),
+            fontSize: nameSize,
+            lineHeight: 0.84,
+            letterSpacing: "-0.04em",
+            fontWeight: 700,
+            textTransform: doc.uppercase ? "uppercase" : "none",
+            whiteSpace: "pre-line",
+            color: doc.colors.ink,
+          }}
+        >
+          {doc.copy.headline.trim() || "Headline"}
+        </h1>
+        {doc.copy.date.trim() ? (
+          <p
+            style={{
+              margin: "0.18em 0 0",
+              fontFamily: displayFace(fonts),
+              fontSize: Math.round(nameSize * 0.32),
+              lineHeight: 1,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: doc.colors.accent,
+            }}
+          >
+            {doc.copy.date}
+          </p>
+        ) : null}
+        <p
+          style={{
+            margin: "0.45em 0 0",
+            fontFamily: bodyFace(fonts),
+            fontWeight: 700,
+            fontSize: Math.max(12, nameSize * 0.16),
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          {[doc.copy.place, doc.copy.price].filter((item) => item.trim()).join("  ·  ")}
+        </p>
+        {doc.copy.cta.trim() ? (
+          <div
+            style={{
+              marginTop: frame.pad * 0.45,
+              background: doc.colors.ink,
+              color: doc.colors.bg,
+              display: "inline-block",
+              fontFamily: bodyFace(fonts),
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              fontSize: Math.max(12, width * 0.028),
+              padding: "0.45em 0.7em",
+            }}
+          >
+            {doc.copy.cta}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 const LAYOUTS: Record<string, (props: RenderProps) => ReactElement> = {
   slam: Slam,
   split: Split,
@@ -1035,6 +1349,9 @@ const LAYOUTS: Record<string, (props: RenderProps) => ReactElement> = {
   columns: Columns,
   frame: FrameLayout,
   ribbon: Ribbon,
+  crop: Crop,
+  riso: Riso,
+  club: Club,
 };
 
 function Texture({ doc }: { doc: FlyerDoc }) {

@@ -248,6 +248,9 @@ export const layouts: LayoutSpec[] = [
   { id: "columns", name: "Columns", hint: "Headline, then two columns" },
   { id: "frame", name: "Frame", hint: "A double border, centered" },
   { id: "ribbon", name: "Ribbon", hint: "A band of facts through the middle" },
+  { id: "crop", name: "Crop", hint: "Type runs off the edge of the page" },
+  { id: "riso", name: "Riso", hint: "Two-color print, the type slightly off register" },
+  { id: "club", name: "Club", hint: "Photo, a huge name, the date one step down" },
 ];
 
 function colors(
