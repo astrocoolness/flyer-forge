@@ -2,6 +2,8 @@ import { inkOn, mixHex } from "@/lib/flyer/color";
 import { fontPairs, layouts } from "@/lib/flyer/catalog";
 import { isTexture, type Align, type FlyerColors, type FlyerDoc, type Texture } from "@/lib/flyer/types";
 
+export type StyleShelf = "night" | "paper" | "color";
+
 export type GeneratedStyle = {
   key: string;
   name: string;
@@ -13,9 +15,22 @@ export type GeneratedStyle = {
   uppercase: boolean;
   align: Align;
   headlineScale: number;
+  shelf: StyleShelf;
 };
 
 type Ground = "dark" | "light" | "flood";
+
+const SHELF: Record<Ground, StyleShelf> = {
+  dark: "night",
+  light: "paper",
+  flood: "color",
+};
+
+export const STYLE_SHELVES: { id: StyleShelf; label: string }[] = [
+  { id: "night", label: "Night" },
+  { id: "paper", label: "Paper" },
+  { id: "color", label: "Color" },
+];
 
 type Recipe = {
   name: string;
@@ -186,12 +201,11 @@ export const STYLE_COUNT = RECIPES.length;
 
 export function generateStyles(seed: number): GeneratedStyle[] {
   const hueShift = ((seed * 17) % 41) - 20;
-  const ranked = RECIPES.map((recipe, index) => ({ recipe, roll: mix(seed, index) }));
-  ranked.sort((a, b) => a.roll - b.roll);
-  return ranked.slice(0, 8).map(({ recipe }) => ({
+  return RECIPES.map((recipe) => ({
     key: `${recipe.name}-${seed}`,
     name: recipe.name,
     vibe: recipe.vibe,
+    shelf: SHELF[recipe.ground],
     colors: paint(recipe, hueShift),
     layoutId: recipe.layoutId,
     fontPairId: recipe.fontPairId,
@@ -200,12 +214,6 @@ export function generateStyles(seed: number): GeneratedStyle[] {
     align: recipe.align,
     headlineScale: recipe.headlineScale,
   }));
-}
-
-function mix(seed: number, index: number): number {
-  let h = (seed + 1) * 374761393 + index * 668265263;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return (h ^ (h >>> 16)) >>> 0;
 }
 
 const KEPT_KEY = "flyer-forge-looks";
@@ -265,5 +273,6 @@ export function lookFromDoc(doc: FlyerDoc, name = "Kept"): GeneratedStyle {
     uppercase: doc.uppercase,
     align: doc.align,
     headlineScale: doc.headlineScale,
+    shelf: "paper",
   };
 }

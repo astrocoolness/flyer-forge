@@ -12,7 +12,7 @@ import {
   themes,
 } from "@/lib/flyer/catalog";
 import { mergePatch, type FlyerPatch } from "@/lib/flyer/patch";
-import { generateStyles, type GeneratedStyle } from "@/lib/flyer/style";
+import { generateStyles, type GeneratedStyle, type StyleShelf } from "@/lib/flyer/style";
 import { isTexture, type Align, type FlyerCopy, type FlyerDoc, type Texture } from "@/lib/flyer/types";
 
 const WELCOME_ID = "sheet-welcome";
@@ -26,6 +26,8 @@ type FlyerState = {
   past: Snapshot[];
   future: Snapshot[];
   styleSeed: number;
+  styleShelf: StyleShelf;
+  setStyleShelf: (shelf: StyleShelf) => void;
   checkpoint: () => void;
   patchActive: (recipe: (doc: FlyerDoc) => FlyerDoc) => void;
   undo: () => void;
@@ -151,6 +153,7 @@ export const useFlyerStore = create<FlyerState>()(
       past: [],
       future: [],
       styleSeed: 1,
+      styleShelf: "night",
       checkpoint: () => {
         const { flyers, activeId, past } = get();
         set({
@@ -238,11 +241,14 @@ export const useFlyerStore = create<FlyerState>()(
           headlineScale: style.headlineScale,
         }));
       },
+      setStyleShelf: (styleShelf) => set({ styleShelf }),
       nextStyles: () => set({ styleSeed: get().styleSeed + 1 }),
       cookLook: () => {
         const styleSeed = get().styleSeed + 1;
-        set({ styleSeed });
-        get().applyStyle(generateStyles(styleSeed)[0]);
+        const styles = generateStyles(styleSeed);
+        const style = styles[Math.abs(styleSeed) % styles.length];
+        set({ styleSeed, styleShelf: style.shelf });
+        get().applyStyle(style);
       },
       applyLayout: (layoutId) => {
         get().checkpoint();

@@ -16,7 +16,7 @@ import { cn } from "@/lib/cn";
 import { fontPairs, formats, getFontPair, getFormat, getLayout, getTheme, layouts, starters, themeGroups, themes } from "@/lib/flyer/catalog";
 import { fileToJpeg, readTextFile } from "@/lib/flyer/photos";
 import type { ChatMessage } from "@/lib/flyer/patch";
-import { STYLE_COUNT, forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
+import { STYLE_COUNT, STYLE_SHELVES, forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
 import { selectActive, useFlyerStore } from "@/lib/flyer/store";
 import { COPY_LIMITS, TEXTURES, type FlyerCopy, type Texture } from "@/lib/flyer/types";
 
@@ -140,6 +140,8 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
   const nextStyles = useFlyerStore((state) => state.nextStyles);
   const cookLook = useFlyerStore((state) => state.cookLook);
   const seed = useFlyerStore((state) => state.styleSeed);
+  const shelf = useFlyerStore((state) => state.styleShelf);
+  const setStyleShelf = useFlyerStore((state) => state.setStyleShelf);
   const applyLayout = useFlyerStore((state) => state.applyLayout);
   const applyFormat = useFlyerStore((state) => state.applyFormat);
   const applyFont = useFlyerStore((state) => state.applyFont);
@@ -150,7 +152,7 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
   const setColor = useFlyerStore((state) => state.setColor);
   const resetColors = useFlyerStore((state) => state.resetColors);
   const edit = useEditSession();
-  const styles = generateStyles(seed);
+  const styles = generateStyles(seed).filter((style) => style.shelf === shelf);
   const [kept, setKept] = useState<GeneratedStyle[]>([]);
 
   useEffect(() => {
@@ -172,13 +174,15 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
 
   return (
     <div className="flex flex-col gap-5 p-3">
-      <Intro title="Look" body="Generate a style, or start from a theme. The words stay put." />
+      <Intro title="Look" body="Browse a shelf, or step through the whole set. The words stay put." />
 
       <section>
         <div className="mb-2 flex items-end justify-between gap-2">
           <div>
             <h3 className="text-sm font-medium text-paper">Styles</h3>
-            <p className="text-xs text-mute">{STYLE_COUNT} looks</p>
+            <p className="text-xs text-mute">
+              {styles.length} on this shelf · {STYLE_COUNT} looks
+            </p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant="line" onClick={keepCurrent}>
@@ -191,6 +195,26 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
               New look
             </Button>
           </div>
+        </div>
+        <div className="mb-2 flex gap-1.5" role="tablist" aria-label="Style shelves">
+          {STYLE_SHELVES.map((item) => {
+            const on = shelf === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setStyleShelf(item.id)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs",
+                  on ? "border-press bg-panel-2 text-paper" : "border-line text-mute hover:text-paper",
+                )}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
         <div className="grid grid-cols-2 gap-2">
           {styles.map((style) => {
