@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, ImagePlus, Library, MessageSquare, Palette, Printer, Redo2, Type, Undo2 } from "lucide-react";
+import { BookOpen, Download, ImagePlus, Library, MessageSquare, Palette, Printer, Redo2, Type, Undo2 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FlyerSheet } from "@/components/studio/sheet";
-import { CopyPanel, InkPanel, Library as SheetLibrary, LookPanel, PhotoPanel } from "@/components/studio/panels";
+import { CopyPanel, IdeasPanel, InkPanel, Library as SheetLibrary, LookPanel, PhotoPanel } from "@/components/studio/panels";
 import { cn } from "@/lib/cn";
 import { getFormat, getTheme, themes } from "@/lib/flyer/catalog";
 import { askInk } from "@/lib/flyer/ink.functions";
@@ -12,11 +12,12 @@ import { sheetPayload, splitInkReply, type ChatMessage } from "@/lib/flyer/patch
 import { fileToJpeg, loadPhoto, savePhoto, shrinkDataUrl } from "@/lib/flyer/photos";
 import { selectActive, useFlyerStore } from "@/lib/flyer/store";
 
-type Tab = "copy" | "look" | "photo" | "ink" | "saved";
+type Tab = "copy" | "look" | "ideas" | "photo" | "ink" | "saved";
 
 const TABS: { id: Tab; label: string; icon: typeof Type; wideOnly?: boolean }[] = [
   { id: "copy", label: "Copy", icon: Type },
   { id: "look", label: "Look", icon: Palette },
+  { id: "ideas", label: "Ideas", icon: BookOpen },
   { id: "photo", label: "Photo", icon: ImagePlus },
   { id: "ink", label: "Prompt", icon: MessageSquare },
   { id: "saved", label: "Saved", icon: Library, wideOnly: true },
@@ -447,6 +448,7 @@ export function Studio() {
           <div className={cn("min-h-0 flex-1", tab === "saved" || tab === "ink" ? "flex flex-col" : "scroll-y")}>
             {tab === "copy" ? <CopyPanel /> : null}
             {tab === "look" ? <LookPanel guides={guides} onGuides={setGuides} /> : null}
+            {tab === "ideas" ? <IdeasPanel /> : null}
             {tab === "photo" ? (
               <PhotoPanel photoUrl={photoUrl} onPick={(file) => void useDesignPhoto(file)} onClear={clearPhoto} onAsk={() => void askPhoto()} />
             ) : null}

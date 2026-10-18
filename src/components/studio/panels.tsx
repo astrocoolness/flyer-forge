@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import { fontPairs, formats, getFontPair, getFormat, getLayout, getTheme, layouts, starters, themeGroups, themes } from "@/lib/flyer/catalog";
+import { fontPairs, formats, getFontPair, getFormat, getLayout, getTheme, layouts, referenceKinds, references, starters, themeGroups, themes, type ReferenceKind } from "@/lib/flyer/catalog";
 import { fileToJpeg, readTextFile } from "@/lib/flyer/photos";
 import type { ChatMessage } from "@/lib/flyer/patch";
 import { STYLE_COUNT, STYLE_SHELVES, forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
@@ -941,6 +941,38 @@ export function InkPanel({
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+export function IdeasPanel() {
+  const applyReference = useFlyerStore((state) => state.applyReference);
+  const [kind, setKind] = useState<ReferenceKind | "all">("all");
+  const list = kind === "all" ? references : references.filter((item) => item.kind === kind);
+  return (
+    <div className="space-y-4 p-4">
+      <p className="text-sm text-mute">Real flyer moves. Pick one and the sheet becomes that example. Your photo stays.</p>
+      <div className="flex flex-wrap gap-2">
+        {referenceKinds.map((item) => (
+          <Button key={item.id} size="sm" variant={kind === item.id ? "primary" : "line"} aria-pressed={kind === item.id} onClick={() => setKind(item.id)}>
+            {item.label}
+          </Button>
+        ))}
+      </div>
+      <ul className="space-y-2">
+        {list.map((item) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              className="w-full rounded-md border border-line px-3 py-3 text-left hover:border-paper"
+              onClick={() => applyReference(item.id)}
+            >
+              <span className="block text-sm text-paper">{item.name}</span>
+              <span className="mt-1 block text-sm leading-snug text-mute">{item.note}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

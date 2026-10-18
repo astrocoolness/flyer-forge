@@ -7,6 +7,7 @@ import {
   getLayout,
   getStarter,
   getTheme,
+  getReference,
   layouts,
   starters,
   themes,
@@ -36,6 +37,7 @@ type FlyerState = {
   applyStarter: (starterId: string) => void;
   applyTheme: (themeId: string) => void;
   applyStyle: (style: GeneratedStyle) => void;
+  applyReference: (id: string) => void;
   nextStyles: () => void;
   cookLook: () => void;
   applyLayout: (layoutId: string) => void;
@@ -243,6 +245,27 @@ export const useFlyerStore = create<FlyerState>()(
           align: style.align,
           headlineScale: style.headlineScale,
           mark: style.mark,
+        }));
+      },
+      applyReference: (id) => {
+        const ref = getReference(id);
+        const theme = getTheme(ref.themeId);
+        get().checkpoint();
+        get().patchActive((doc) => ({
+          ...doc,
+          name: ref.name,
+          formatId: ref.formatId,
+          themeId: theme.id,
+          colors: { ...theme.colors },
+          layoutId: ref.layoutId,
+          fontPairId: ref.fontPairId,
+          texture: ref.texture,
+          uppercase: ref.uppercase,
+          align: ref.align,
+          mark: ref.mark,
+          headlineScale: 1,
+          copy: { ...ref.copy },
+          idea: ref.note,
         }));
       },
       setStyleShelf: (styleShelf) => set({ styleShelf }),
