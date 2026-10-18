@@ -1,5 +1,5 @@
 import { centeredLayout, getFormat, getFontPair, getLayout, getTheme } from "@/lib/flyer/catalog";
-import { COPY_LIMITS, isTexture, type Align, type FlyerCopy, type FlyerDoc, type Texture } from "@/lib/flyer/types";
+import { COPY_LIMITS, isMark, isTexture, type Align, type FlyerCopy, type FlyerDoc, type Mark, type Texture } from "@/lib/flyer/types";
 
 export type FlyerPatch = {
   copy?: Partial<FlyerCopy>;
@@ -12,6 +12,7 @@ export type FlyerPatch = {
   align?: Align;
   uppercase?: boolean;
   headlineScale?: number;
+  mark?: Mark;
 };
 
 const COPY_KEYS = Object.keys(COPY_LIMITS) as (keyof FlyerCopy)[];
@@ -42,6 +43,7 @@ export function sanitizePatch(raw: unknown): FlyerPatch | null {
   if (typeof record.headlineScale === "number" && Number.isFinite(record.headlineScale)) {
     patch.headlineScale = Math.min(1.25, Math.max(0.75, Math.round(record.headlineScale * 100) / 100));
   }
+  if (isMark(record.mark) && record.mark !== "off") patch.mark = record.mark;
   if (record.copy && typeof record.copy === "object") {
     const source = record.copy as Record<string, unknown>;
     const copy: Partial<FlyerCopy> = {};
@@ -103,6 +105,7 @@ export function mergePatch(doc: FlyerDoc, patch: FlyerPatch): FlyerDoc {
   if (patch.align) next.align = patch.align;
   if (typeof patch.uppercase === "boolean") next.uppercase = patch.uppercase;
   if (typeof patch.headlineScale === "number") next.headlineScale = patch.headlineScale;
+  if (patch.mark) next.mark = patch.mark;
   return next;
 }
 
@@ -125,6 +128,7 @@ export function sheetPayload(doc: FlyerDoc) {
     align: doc.align,
     uppercase: doc.uppercase,
     headlineScale: doc.headlineScale,
+    mark: doc.mark,
     copy: doc.copy,
     idea: doc.idea.slice(0, 4000),
   };

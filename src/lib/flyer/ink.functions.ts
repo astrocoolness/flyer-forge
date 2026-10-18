@@ -34,6 +34,7 @@ const inkInput = z.object({
     align: z.enum(["left", "center"]),
     uppercase: z.boolean(),
     headlineScale: z.number().min(0.5).max(1.5),
+    mark: z.enum(["off", "outline", "knock", "bar", "stamp"]).optional(),
     copy: copySchema,
     idea: z.string().max(4000),
   }),
@@ -71,7 +72,8 @@ Write like a good poster: short, specific, no emoji, no hashtags, no filler.
 Keep every fact the user gave. Do not invent addresses, prices, dates, ages, or venues. If a fact is missing, leave that field unchanged.
 Reply in 1 to 3 sentences about the choice. If the flyer should change, end with one fenced json block and nothing after it. The app applies that block to the sheet immediately, so a change you only describe does not happen.
 Include only keys that should change. copy fields: kicker, headline, subhead, date, place, price, body, cta, fine.
-Also allowed: themeId, layoutId, formatId, fontPairId, name, texture, align, uppercase, headlineScale (0.75 to 1.25).
+Also allowed: themeId, layoutId, formatId, fontPairId, name, texture, align, uppercase, headlineScale (0.75 to 1.25), mark (off, outline, knock, bar, stamp).
+outline is an empty name with a stroke. knock inverts the name against whatever is behind it. bar underlines the name. stamp drops a tilted date circle. Use a mark when the user asks for something louder or stranger than a plain layout.
 headline may contain one newline as \\n and is at most 6 words. kicker is at most 4 words. body is at most two sentences. cta is 2 to 5 words.
 When the user asks for a mood, a rewrite, a format, or a style, change the matching fields and include them in the json. Treat notes about the event as an edit, not a question.
 If the user is only asking a question and wants no change, skip the json.

@@ -129,6 +129,24 @@ function Kicker({
   );
 }
 
+function markStyle(doc: FlyerDoc, color: string, stroke: number): CSSProperties {
+  const mark = doc.mark ?? "off";
+  if (mark === "outline") {
+    return { color: "transparent", WebkitTextStroke: `${Math.max(1.5, stroke)}px ${color}` };
+  }
+  if (mark === "knock") return { color: "#fff", mixBlendMode: "difference" };
+  if (mark === "bar") {
+    return {
+      color,
+      backgroundImage: `linear-gradient(${doc.colors.accent}, ${doc.colors.accent})`,
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "100% 0.22em",
+      backgroundPosition: "0 86%",
+    };
+  }
+  return { color };
+}
+
 function Headline({
   doc,
   fonts,
@@ -144,22 +162,23 @@ function Headline({
 }) {
   const raw = doc.copy.headline.trim();
   const text = raw || "Headline";
+  const size = headlineSize(text, width, frame, fonts, doc.headlineScale);
   return (
     <h1
       style={{
         margin: 0,
         fontFamily: displayFace(fonts),
-        fontSize: headlineSize(text, width, frame, fonts, doc.headlineScale),
+        fontSize: size,
         lineHeight: fonts.leading,
         letterSpacing: `${fonts.track}em`,
         fontWeight: 700,
         textTransform: doc.uppercase ? "uppercase" : "none",
         textAlign: doc.align,
         whiteSpace: "pre-line",
-        color: color ?? doc.colors.ink,
         opacity: raw ? 1 : 0.38,
         maxWidth: "100%",
         overflowWrap: "anywhere",
+        ...markStyle(doc, color ?? doc.colors.ink, size * 0.035),
       }}
     >
       {text}
@@ -1180,7 +1199,7 @@ function Riso({ doc, fonts, photoUrl, frame }: RenderProps) {
           <Kicker doc={doc} fonts={fonts} width={frame.w * 0.34} />
           <div style={{ position: "relative", marginTop: frame.pad * 0.4 }}>
             <h1 style={{ ...plateFace, position: "absolute", left: shift, top: shift * 0.5, width: "100%", color: doc.colors.accent }}>{text}</h1>
-            <h1 style={{ ...plateFace, position: "relative", color: doc.colors.ink }}>{text}</h1>
+            <h1 style={{ ...plateFace, position: "relative", ...markStyle(doc, doc.colors.ink, plate * 0.04) }}>{text}</h1>
           </div>
           <p
             style={{
@@ -1233,7 +1252,7 @@ function Riso({ doc, fonts, photoUrl, frame }: RenderProps) {
       <div style={{ position: "absolute", left: frame.pad * 0.7, right: frame.pad * 0.4, top: frame.h * (photo ? 0.46 : 0.28) }}>
         <div style={{ position: "relative" }}>
           <h1 style={{ ...face, position: "absolute", left: shift, top: shift * 0.65, width: "100%", color: doc.colors.accent }}>{text}</h1>
-          <h1 style={{ ...face, position: "relative", color: doc.colors.ink, opacity: doc.copy.headline.trim() ? 1 : 0.38 }}>{text}</h1>
+          <h1 style={{ ...face, position: "relative", opacity: doc.copy.headline.trim() ? 1 : 0.38, ...markStyle(doc, doc.colors.ink, size * 0.035) }}>{text}</h1>
         </div>
       </div>
       <div
@@ -1338,7 +1357,7 @@ function Club({ doc, fonts, photoUrl, frame }: RenderProps) {
             fontWeight: 700,
             textTransform: doc.uppercase ? "uppercase" : "none",
             whiteSpace: "pre-line",
-            color: doc.colors.ink,
+            ...markStyle(doc, doc.colors.ink, nameSize * 0.035),
           }}
         >
           {doc.copy.headline.trim() || "Headline"}
@@ -1738,6 +1757,33 @@ export function FlyerSheet({
       }}
     >
       <Layout doc={doc} fonts={fonts} photoUrl={photoUrl} frame={frame} />
+      {doc.mark === "stamp" ? (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 3,
+            right: frame.w * 0.07,
+            top: frame.h * 0.07,
+            width: frame.w * 0.22,
+            height: frame.w * 0.22,
+            borderRadius: "50%",
+            border: `${Math.max(2, frame.w * 0.006)}px solid ${doc.colors.accent}`,
+            color: doc.colors.accent,
+            background: doc.colors.bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transform: "rotate(-14deg)",
+            fontFamily: displayFace(fonts),
+            fontSize: Math.round(frame.w * 0.055),
+            lineHeight: 0.9,
+            textAlign: "center",
+            letterSpacing: "-0.03em",
+          }}
+        >
+          {dateMark(doc.copy.date).big || doc.copy.price.trim() || "★"}
+        </div>
+      ) : null}
       <Texture doc={doc} />
       {guides ? (
         <div

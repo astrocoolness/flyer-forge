@@ -1,6 +1,6 @@
 import { inkOn, mixHex } from "@/lib/flyer/color";
 import { fontPairs, layouts } from "@/lib/flyer/catalog";
-import { isTexture, type Align, type FlyerColors, type FlyerDoc, type Texture } from "@/lib/flyer/types";
+import { isTexture, type Align, type FlyerColors, type FlyerDoc, type Mark, type Texture } from "@/lib/flyer/types";
 
 export type StyleShelf = "night" | "paper" | "color";
 
@@ -16,6 +16,7 @@ export type GeneratedStyle = {
   align: Align;
   headlineScale: number;
   shelf: StyleShelf;
+  mark: Mark;
 };
 
 type Ground = "dark" | "light" | "flood";
@@ -44,19 +45,20 @@ type Recipe = {
   uppercase: boolean;
   align: Align;
   headlineScale: number;
+  mark?: Mark;
 };
 
 const RECIPES: Recipe[] = [
   { name: "Sodium", vibe: "Night ink", hue: 32, accentHue: 8, ground: "dark", layoutId: "slam", fontPairId: "impact", texture: "grain", uppercase: true, align: "left", headlineScale: 1.08 },
-  { name: "Proof", vibe: "Two-color print", hue: 226, accentHue: 332, ground: "light", layoutId: "riso", fontPairId: "brutal", texture: "speckle", uppercase: true, align: "center", headlineScale: 1.12 },
+  { name: "Proof", vibe: "Two-color print", hue: 226, accentHue: 332, ground: "light", layoutId: "riso", fontPairId: "brutal", texture: "speckle", uppercase: true, align: "center", headlineScale: 1.12, mark: "stamp" },
   { name: "Ledger", vibe: "Classified", hue: 42, accentHue: 48, ground: "light", layoutId: "bill", fontPairId: "newsroom", texture: "rules", uppercase: false, align: "left", headlineScale: 0.96 },
   { name: "Acid", vibe: "Night bill", hue: 140, accentHue: 78, ground: "dark", layoutId: "riso", fontPairId: "billboard", texture: "halftone", uppercase: true, align: "center", headlineScale: 1 },
   { name: "Brass", vibe: "Seated card", hue: 36, accentHue: 32, ground: "dark", layoutId: "arc", fontPairId: "classic", texture: "clean", uppercase: false, align: "left", headlineScale: 1 },
-  { name: "Fair", vibe: "Fairground", hue: 44, accentHue: 12, ground: "flood", layoutId: "club", fontPairId: "comic", texture: "stripes", uppercase: true, align: "left", headlineScale: 1.05 },
+  { name: "Fair", vibe: "Fairground", hue: 44, accentHue: 12, ground: "flood", layoutId: "club", fontPairId: "comic", texture: "stripes", uppercase: true, align: "left", headlineScale: 1.05, mark: "bar" },
   { name: "Carbon", vibe: "Street gym", hue: 40, accentHue: 48, ground: "light", layoutId: "badge", fontPairId: "block", texture: "halftone", uppercase: true, align: "left", headlineScale: 1.06 },
   { name: "Glass", vibe: "Winter invite", hue: 204, accentHue: 196, ground: "light", layoutId: "arc", fontPairId: "deco", texture: "clean", uppercase: false, align: "left", headlineScale: 1 },
   { name: "Orchard", vibe: "Greenhouse", hue: 128, accentHue: 18, ground: "light", layoutId: "arc", fontPairId: "book", texture: "grain", uppercase: false, align: "left", headlineScale: 0.98 },
-  { name: "Signal", vibe: "One red light", hue: 350, accentHue: 356, ground: "dark", layoutId: "club", fontPairId: "condensed", texture: "grain", uppercase: true, align: "left", headlineScale: 1.1 },
+  { name: "Signal", vibe: "One red light", hue: 350, accentHue: 356, ground: "dark", layoutId: "club", fontPairId: "condensed", texture: "grain", uppercase: true, align: "left", headlineScale: 1.1, mark: "knock" },
   { name: "Bag", vibe: "Shop bag", hue: 34, accentHue: 28, ground: "flood", layoutId: "rail", fontPairId: "typewriter", texture: "xerox", uppercase: false, align: "left", headlineScale: 1 },
   { name: "Dusk", vibe: "Late set", hue: 286, accentHue: 24, ground: "dark", layoutId: "bill", fontPairId: "editorial", texture: "grain", uppercase: false, align: "left", headlineScale: 1.02 },
   { name: "Handbill", vibe: "Street pass", hue: 18, accentHue: 48, ground: "light", layoutId: "split", fontPairId: "handbill", texture: "xerox", uppercase: true, align: "left", headlineScale: 1.04 },
@@ -67,7 +69,7 @@ const RECIPES: Recipe[] = [
   { name: "Chili", vibe: "Hot window", hue: 8, accentHue: 42, ground: "flood", layoutId: "crop", fontPairId: "impact", texture: "clean", uppercase: true, align: "left", headlineScale: 1.14 },
   { name: "Plum", vibe: "After dark", hue: 312, accentHue: 28, ground: "dark", layoutId: "poster", fontPairId: "classic", texture: "grain", uppercase: false, align: "center", headlineScale: 1.08 },
   { name: "Sand", vibe: "Late sun", hue: 36, accentHue: 16, ground: "light", layoutId: "bill", fontPairId: "editorial", texture: "grain", uppercase: false, align: "left", headlineScale: 1 },
-  { name: "Neon", vibe: "Warehouse", hue: 312, accentHue: 78, ground: "dark", layoutId: "club", fontPairId: "brutal", texture: "halftone", uppercase: true, align: "left", headlineScale: 1.1 },
+  { name: "Neon", vibe: "Warehouse", hue: 312, accentHue: 78, ground: "dark", layoutId: "club", fontPairId: "brutal", texture: "halftone", uppercase: true, align: "left", headlineScale: 1.1, mark: "outline" },
   { name: "Lawn", vibe: "Block party", hue: 92, accentHue: 48, ground: "flood", layoutId: "badge", fontPairId: "block", texture: "stripes", uppercase: true, align: "center", headlineScale: 1.04 },
   { name: "Cream", vibe: "Shop card", hue: 40, accentHue: 210, ground: "light", layoutId: "ticket", fontPairId: "typewriter", texture: "clean", uppercase: false, align: "left", headlineScale: 0.96 },
   { name: "Rust", vibe: "Yard gate", hue: 16, accentHue: 48, ground: "dark", layoutId: "rail", fontPairId: "condensed", texture: "xerox", uppercase: true, align: "left", headlineScale: 1.06 },
@@ -213,6 +215,7 @@ export function generateStyles(seed: number): GeneratedStyle[] {
     uppercase: recipe.uppercase,
     align: recipe.align,
     headlineScale: recipe.headlineScale,
+    mark: recipe.mark ?? "off",
   }));
 }
 
@@ -274,5 +277,6 @@ export function lookFromDoc(doc: FlyerDoc, name = "Kept"): GeneratedStyle {
     align: doc.align,
     headlineScale: doc.headlineScale,
     shelf: "paper",
+    mark: doc.mark ?? "off",
   };
 }

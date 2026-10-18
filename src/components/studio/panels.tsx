@@ -18,7 +18,7 @@ import { fileToJpeg, readTextFile } from "@/lib/flyer/photos";
 import type { ChatMessage } from "@/lib/flyer/patch";
 import { STYLE_COUNT, STYLE_SHELVES, forgetLook, generateStyles, loadKept, lookFromDoc, rememberLook, type GeneratedStyle } from "@/lib/flyer/style";
 import { selectActive, useFlyerStore } from "@/lib/flyer/store";
-import { COPY_LIMITS, TEXTURES, type FlyerCopy, type Texture } from "@/lib/flyer/types";
+import { COPY_LIMITS, MARKS, TEXTURES, type FlyerCopy, type Mark, type Texture } from "@/lib/flyer/types";
 
 function useEditSession() {
   const checkpoint = useFlyerStore((state) => state.checkpoint);
@@ -123,6 +123,14 @@ export function CopyPanel() {
   );
 }
 
+const MARK_LABELS: Record<Mark, string> = {
+  off: "Plain",
+  outline: "Outline",
+  knock: "Knock",
+  bar: "Underline",
+  stamp: "Stamp",
+};
+
 const TEXTURE_LABELS: Record<Texture, string> = {
   clean: "Clean",
   grain: "Grain",
@@ -148,6 +156,7 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
   const setTexture = useFlyerStore((state) => state.setTexture);
   const setAlign = useFlyerStore((state) => state.setAlign);
   const setUppercase = useFlyerStore((state) => state.setUppercase);
+  const setMark = useFlyerStore((state) => state.setMark);
   const setHeadlineScale = useFlyerStore((state) => state.setHeadlineScale);
   const setColor = useFlyerStore((state) => state.setColor);
   const resetColors = useFlyerStore((state) => state.resetColors);
@@ -422,6 +431,19 @@ export function LookPanel({ guides, onGuides }: { guides: boolean; onGuides: (va
               onClick={() => setTexture(texture)}
             >
               {TEXTURE_LABELS[texture]}
+            </Button>
+          ))}
+        </div>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {MARKS.map((mark) => (
+            <Button
+              key={mark}
+              size="sm"
+              variant={(doc.mark ?? "off") === mark ? "primary" : "line"}
+              aria-pressed={(doc.mark ?? "off") === mark}
+              onClick={() => setMark(mark)}
+            >
+              {MARK_LABELS[mark]}
             </Button>
           ))}
         </div>

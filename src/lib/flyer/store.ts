@@ -13,7 +13,7 @@ import {
 } from "@/lib/flyer/catalog";
 import { mergePatch, type FlyerPatch } from "@/lib/flyer/patch";
 import { generateStyles, type GeneratedStyle, type StyleShelf } from "@/lib/flyer/style";
-import { isTexture, type Align, type FlyerCopy, type FlyerDoc, type Texture } from "@/lib/flyer/types";
+import { isMark, isTexture, type Align, type FlyerCopy, type FlyerDoc, type Mark, type Texture } from "@/lib/flyer/types";
 
 const WELCOME_ID = "sheet-welcome";
 const MAX_FLYERS = 24;
@@ -50,6 +50,7 @@ type FlyerState = {
   setTexture: (texture: Texture) => void;
   setAlign: (align: Align) => void;
   setUppercase: (uppercase: boolean) => void;
+  setMark: (mark: Mark) => void;
   setHeadlineScale: (headlineScale: number) => void;
   setPhoto: (patch: Partial<Pick<FlyerDoc, "photoId" | "photoRole" | "photoDim" | "photoPos">>) => void;
   newFlyer: () => boolean;
@@ -79,6 +80,7 @@ function docFromStarter(starterId: string, id: string, name?: string): FlyerDoc 
     align: starter.align,
     texture: starter.texture,
     uppercase: starter.uppercase,
+    mark: "off",
   };
 }
 
@@ -136,6 +138,7 @@ function normalize(doc: FlyerDoc): FlyerDoc {
     align: doc.align === "center" ? "center" : "left",
     uppercase: Boolean(doc.uppercase),
     texture: isTexture(doc.texture) ? doc.texture : "clean",
+    mark: isMark(doc.mark) ? doc.mark : "off",
   };
 }
 
@@ -239,6 +242,7 @@ export const useFlyerStore = create<FlyerState>()(
           uppercase: style.uppercase,
           align: style.align,
           headlineScale: style.headlineScale,
+          mark: style.mark,
         }));
       },
       setStyleShelf: (styleShelf) => set({ styleShelf }),
@@ -315,6 +319,10 @@ export const useFlyerStore = create<FlyerState>()(
       setUppercase: (uppercase) => {
         get().checkpoint();
         get().patchActive((doc) => ({ ...doc, uppercase }));
+      },
+      setMark: (mark) => {
+        get().checkpoint();
+        get().patchActive((doc) => ({ ...doc, mark }));
       },
       setHeadlineScale: (headlineScale) => {
         get().patchActive((doc) => ({ ...doc, headlineScale }));

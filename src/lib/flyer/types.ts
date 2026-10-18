@@ -5,6 +5,12 @@ export function isTexture(value: unknown): value is Texture {
   return typeof value === "string" && (TEXTURES as readonly string[]).includes(value);
 }
 export type Align = "left" | "center";
+export const MARKS = ["off", "outline", "knock", "bar", "stamp"] as const;
+export type Mark = (typeof MARKS)[number];
+
+export function isMark(value: unknown): value is Mark {
+  return typeof value === "string" && (MARKS as readonly string[]).includes(value);
+}
 export type PhotoRole = "background" | "inset" | "off";
 export type PhotoPos = "center" | "top" | "bottom";
 
@@ -48,6 +54,7 @@ export type FlyerDoc = {
   align: Align;
   texture: Texture;
   uppercase: boolean;
+  mark: Mark;
 };
 
 export const COPY_LIMITS: Record<keyof FlyerCopy, number> = {
