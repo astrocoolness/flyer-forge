@@ -249,8 +249,10 @@ export const layouts: LayoutSpec[] = [
   { id: "frame", name: "Frame", hint: "A double border, centered" },
   { id: "ribbon", name: "Ribbon", hint: "A band of facts through the middle" },
   { id: "crop", name: "Crop", hint: "Type runs off the edge of the page" },
-  { id: "riso", name: "Riso", hint: "Two-color print, the type slightly off register" },
+  { id: "riso", name: "Riso", hint: "One-ink photo on a second color, type off to the side" },
   { id: "club", name: "Club", hint: "Photo, a huge name, the date one step down" },
+  { id: "arc", name: "Arc", hint: "One circle, then the names in a column" },
+  { id: "bill", name: "Bill", hint: "A show bill: photo, a date stamp, the lineup" },
 ];
 
 function colors(
